@@ -1,18 +1,20 @@
-# MyFit
+# MyFit — Meu treino, minha evolução
 
-MyFit is an owner-private workout tracker for one account. The Site sign-in gate uses the account's ChatGPT identity; the database keys every record to the stable authenticated user ID, and every API operation reads or writes only that user's row.
+MyFit is a standalone workout tracker with email registration, sign-in, password recovery, workout history, progress, and private measurements.
 
-## Authentication and password recovery
+## Private data
 
-Visitors sign in through the private Site's ChatGPT sign-in flow. MyFit does not store or manage a separate password. If the account password needs to be changed or recovered, use the password recovery flow on the ChatGPT sign-in page. The sign-out link in the app ends the Site session.
+Authentication and storage use Supabase. Each account stores its own `myfit_data` row, protected by PostgreSQL row-level security. Configure `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` as build variables in Cloudflare. Never put a Supabase service-role key in the browser or repository.
 
-## Persistent data
+## Cloudflare Workers build
 
-The app uses the Site D1 binding `DB`, declared in `.openai/hosting.json`. The source migration creates `user_data`; deployments apply the generated migration. The row key is the Site-authenticated user ID, so a different account cannot read the current user's training history, measurements, or notes.
+- Build command: `npm run build:standalone`
+- Deploy command: `npx wrangler deploy --config dist/server/wrangler.json`
+- Required build variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`
 
-If the app shows **Configurar dados**, the D1 binding is not available yet. Do not enter private measurements until that notice disappears and the status reads **Salvo**.
+The standalone build omits the ChatGPT Sites sign-in and data integrations. Cloudflare assigns the Worker a public `workers.dev` URL after a successful deploy.
 
-## Local development
+## Local build
 
-The starter's portable profile can mock sign-in for local preview. Use its documented `/signin-with-chatgpt?return_to=/` route. Production does not include the mock account; production access is handled by Sites.
+Use Node.js 22 or newer, then run `npm install` and `npm run build:standalone`.
 
